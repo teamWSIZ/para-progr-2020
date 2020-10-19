@@ -1,0 +1,6 @@
+{
+  "server_port": "8080",
+  "server_host": "1.2.3.4",
+  "ssl_crt": "delta.crt",
+  "ssl_key": "delta.key"
+}
