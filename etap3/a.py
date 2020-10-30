@@ -1,5 +1,5 @@
 # https://github.com/VingtCinq/python-resize-image
-from PIL import Image
+from PIL import Image, ImageEnhance
 from resizeimage import resizeimage
 
 
@@ -28,9 +28,26 @@ def thumb(path, file, file_small, height=320, width=200):
             print(image.size)
             res = resizeimage.resize_thumbnail(image, (height, width))
             print(res.size)
+            # res = res.convert('LA')
+            res = res.rotate(45)
             res.save(path + file_small, image.format)
+
+def sharpness(file):
+    # preserves ratio, no crop, trying best to match height/width
+    with open(file, 'r+b') as f:
+        with Image.open(f) as image:
+            print(image.size)
+            enhancer = ImageEnhance.Sharpness(image)
+            for i in range(8):
+                factor = i / 4.0
+                res = enhancer.enhance(factor)
+                res.save(f's{factor}.png', image.format)
+
 
 
 # cover('../etap2/', 'plasma.png', 'sm_image.png', 320, 200)
 # fix_width('../etap3/', 'plasma.png', 'sm_plasma.png', 200)
 thumb('../etap3/', 'plasma.png', 'sm_plasma.png', 320, 200)
+
+sharpness('../etap3/plasma.png')
+
