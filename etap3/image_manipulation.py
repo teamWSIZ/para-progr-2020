@@ -45,9 +45,9 @@ def sharpness(file):
 
 
 
-# cover('../etap2/', 'plasma.png', 'sm_image.png', 320, 200)
+# cover('../etap3/', 'plasma.png', 'sm_plasma.png', 300, 300)
 # fix_width('../etap3/', 'plasma.png', 'sm_plasma.png', 200)
-thumb('../etap3/', 'plasma.png', 'sm_plasma.png', 320, 200)
+# thumb('../etap3/', 'plasma.png', 'sm_plasma.png', 320, 200)
 
 sharpness('../etap3/plasma.png')
 
