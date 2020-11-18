@@ -1,3 +1,5 @@
+aiohttp_cors
+aiohttp
 python-resize-image
 requests ~= 2.23.0      # 2.23.* --- będzie podbijał te patch-updates, ale już nie minor-updates, ani major-updates
 #requests >= 2.24.0     # będzie wymagał conajmniej 2.24.0
