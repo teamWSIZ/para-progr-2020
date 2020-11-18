@@ -1,19 +1,12 @@
 import asyncio
-
-import aiohttp
-from concurrent.futures.thread import ThreadPoolExecutor
-import threading
 from datetime import datetime
 
+import aiohttp
 import requests
 
+from utils import ts
 
-# from etap5_aiohttp.utils import ts
-def ts():
-    return datetime.now().timestamp()
-
-
-M = 50000
+M = 5000
 
 """
 Idea: odpalić `M` job-ów na event-loopie.
@@ -21,14 +14,11 @@ Idea: odpalić `M` job-ów na event-loopie.
 """
 
 
-def job():
-    # print(f'job on thread {threading.current_thread().name}')
-    r = requests.get('http://localhost:9081/')
-    # r = requests.get('http://localhost:2233/status')
-    return len(r.json()['comment'])
-
-
-class Engine:
+class AsyncHttpPerfTestEngine:
+    """
+    Klasa przechowująca sesję ClientSession,
+    i wykonująca asynchronicznie self.job()
+    """
     session: aiohttp.ClientSession
 
     def __init__(self, conn=None):
@@ -47,19 +37,24 @@ class Engine:
                 return None
             return await response.json()
 
-    async def job(self) -> int:
-        url = 'http://localhost:2233/status'
+    async def job(self):
+        """
+        Właściwa funkcja zawierająca testowany kod/endpoint.
+        """
+        # url = 'http://localhost:2233/status'
+        # url = 'http://localhost:2233/files/blocking'
+        url = 'http://localhost:2233/files/async'
         res = await self.fetch_data(url)
-        return len(res['comment'])
+        return len(res['data'])
 
 
 async def main_task():
-    engine = Engine()
+    engine = AsyncHttpPerfTestEngine()
     await engine.connect()
     tasks = [asyncio.create_task(engine.job()) for _ in range(M)]
     await asyncio.wait(tasks)
     suma = sum(tasks[i].result() for i in range(M))
-    print(f'check 12={suma / M}')
+    print(f'check 12.0={suma / M}')
     await engine.disconnect()
 
 
@@ -67,7 +62,7 @@ if __name__ == '__main__':
     start = ts()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main_task())
-    print('------')
     loop.close()
+    print('------')
     delta = ts() - start
     print(f'{M} requests in {delta:.3f}s ({M / delta:.0f}RPS)')

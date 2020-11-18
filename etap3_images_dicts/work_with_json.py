@@ -1,6 +1,6 @@
 import json
 
-from etap3.dataclass_in_python import Furniture
+from etap3_images_dicts.dataclass_in_python import Furniture
 
 fa = Furniture(25, 500, 500, 'aluminium')
 

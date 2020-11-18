@@ -1,9 +1,9 @@
 import requests
 from concurrent.futures.process import ProcessPoolExecutor
 
-from etap5_aiohttp.utils import ts
+from utils import ts
 
-M = 200
+M = 5000
 executor = ProcessPoolExecutor(16)
 
 

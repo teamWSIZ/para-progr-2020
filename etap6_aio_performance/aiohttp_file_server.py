@@ -1,5 +1,11 @@
+"""
+Testuje operacje plikowe.
+Zadane endpoint, którego wykonanie wymaga dostępu do pliku na dysku.
+"""
+
 from dataclasses import asdict, dataclass
 
+import aiofiles
 import aiohttp_cors
 from aiohttp import web
 
@@ -30,6 +36,22 @@ routes = web.RouteTableDef()
 @routes.get('/status')
 async def hello(req):
     return answer(f'app works OK')
+
+
+@routes.get('/files/blocking')
+async def get_file_blocking(req):
+    with open('data.txt', 'r') as file:
+        data = file.read()
+    res = {"data": data}
+    return web.json_response(res)
+
+
+@routes.get('/files/async')
+async def get_file_blocking(req):
+    async with aiofiles.open('data.txt') as f:
+        data = await f.read()
+    res = {"data": data}
+    return web.json_response(res)
 
 
 app = web.Application()
