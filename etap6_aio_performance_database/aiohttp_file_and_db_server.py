@@ -9,6 +9,7 @@ import aiofiles
 import aiohttp_cors
 from aiohttp import web
 
+from etap6_aio_performance_database.db_access import DB
 from simplelogger import log
 
 
@@ -54,6 +55,20 @@ async def get_file_blocking(req):
     return web.json_response(res)
 
 
+@routes.get('/db/basic')
+async def get_file_blocking(req):
+    data = await db().all_from_basic()
+    res = {"data": data}
+    return web.json_response(res)
+
+
+@routes.get('/db/write')
+async def get_file_blocking(req):
+    data = await db().random_write()
+    res = {"data": 'OK'}
+    return web.json_response(res)
+
+
 app = web.Application()
 app.router.add_routes(routes)
 
@@ -73,8 +88,14 @@ for route in list(app.router.routes()):
 ##############
 # App creation
 
+def db() -> DB:
+    return app['db']
+
+
 async def pre_init():
     log('Creating aiohttp app')
+    app['db'] = DB()
+    await db().init()
 
 
 async def app_factory():

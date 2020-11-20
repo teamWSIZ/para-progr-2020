@@ -1,3 +1,4 @@
+faker
 aiohttp_cors
 aiohttp
 python-resize-image

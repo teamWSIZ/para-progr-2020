@@ -1,12 +1,11 @@
-import asyncio
-from datetime import datetime
-
 import aiohttp
-import requests
+import asyncio
 
 from utils import ts
 
-M = 5000
+REQUEST_COUNT = 2000
+BATCH_SIZE = 100
+BATCH_NUMBER = REQUEST_COUNT // BATCH_SIZE
 
 """
 Idea: odpalić `M` job-ów na event-loopie.
@@ -43,7 +42,9 @@ class AsyncHttpPerfTestEngine:
         """
         # url = 'http://localhost:2233/status'
         # url = 'http://localhost:2233/files/blocking'
-        url = 'http://localhost:2233/files/async'
+        # url = 'http://localhost:2233/files/async'
+        url = 'http://localhost:2233/db/basic'
+        # url = 'http://localhost:2233/db/write'
         res = await self.fetch_data(url)
         return len(res['data'])
 
@@ -51,10 +52,12 @@ class AsyncHttpPerfTestEngine:
 async def main_task():
     engine = AsyncHttpPerfTestEngine()
     await engine.connect()
-    tasks = [asyncio.create_task(engine.job()) for _ in range(M)]
-    await asyncio.wait(tasks)
-    suma = sum(tasks[i].result() for i in range(M))
-    print(f'check 12.0={suma / M}')
+    suma = 0
+    for i in range(BATCH_NUMBER):
+        tasks = [asyncio.create_task(engine.job()) for _ in range(BATCH_SIZE)]
+        await asyncio.wait(tasks)
+        suma += sum(tasks[i].result() for i in range(BATCH_SIZE))
+    print(f'check 12.0={suma / REQUEST_COUNT}')
     await engine.disconnect()
 
 
@@ -65,4 +68,4 @@ if __name__ == '__main__':
     loop.close()
     print('------')
     delta = ts() - start
-    print(f'{M} requests in {delta:.3f}s ({M / delta:.0f}RPS)')
+    print(f'{REQUEST_COUNT} requests in {delta:.3f}s ({REQUEST_COUNT / delta:.0f}RPS)')
