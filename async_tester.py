@@ -4,7 +4,7 @@ import asyncio
 from utils import ts
 
 REQUEST_COUNT = 2000
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 BATCH_NUMBER = REQUEST_COUNT // BATCH_SIZE
 
 """
@@ -43,8 +43,8 @@ class AsyncHttpPerfTestEngine:
         # url = 'http://localhost:2233/status'
         # url = 'http://localhost:2233/files/blocking'
         # url = 'http://localhost:2233/files/async'
-        url = 'http://localhost:2233/db/basic'
-        # url = 'http://localhost:2233/db/write'
+        # url = 'http://localhost:2233/db/basic'
+        url = 'http://localhost:2233/db/write'
         res = await self.fetch_data(url)
         return len(res['data'])
 
