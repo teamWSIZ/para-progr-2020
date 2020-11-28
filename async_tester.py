@@ -40,11 +40,11 @@ class AsyncHttpPerfTestEngine:
         """
         Właściwa funkcja zawierająca testowany kod/endpoint.
         """
-        # url = 'http://localhost:2233/status'
+        # url = 'http://localhost:2233/'
         # url = 'http://localhost:2233/files/blocking'
         # url = 'http://localhost:2233/files/async'
-        # url = 'http://localhost:2233/db/basic'
-        url = 'http://localhost:2233/db/write'
+        url = 'http://localhost:2234/db/basic'
+        # url = 'http://localhost:2233/db/write'
         res = await self.fetch_data(url)
         return len(res['data'])
 

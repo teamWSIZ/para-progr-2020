@@ -10,7 +10,6 @@ from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 from simplelogger import log
 
-
 """
 For middleware see: https://rollout.io/blog/monitoring-your-asynchronous-python-web-applications-using-prometheus/
 
@@ -67,12 +66,14 @@ cors = aiohttp_cors.setup(app, defaults={
 for route in list(app.router.routes()):
     cors.add(route)
 
+
 ##############
 # Periodic monitoring
 
 def network_io():
     gg = psutil.net_io_counters(pernic=True)['wlp59s0']
-    return gg.bytes_sent/1000, gg.bytes_recv/1000
+    return gg.bytes_sent / 1000, gg.bytes_recv / 1000
+
 
 async def update_gauges():
     while True:
@@ -99,7 +100,7 @@ async def app_factory():
 
 
 def run_it():
-    web.run_app(app_factory(), port=2233)
+    web.run_app(app_factory(), port=2233, host='localhost')
 
 
 run_it()

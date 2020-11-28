@@ -29,7 +29,15 @@ routes = web.RouteTableDef()
 
 @routes.get('/')
 async def hello(req):
+    app['request_count'] += 1
     return answer(f'app works OK')
+
+
+@routes.get('/test')
+async def hello(req):
+    app['request_count'] += 1
+    print(f'current counter: {app["request_count"]}')
+    return web.json_response({"result": 15, "comment": 'OK'})
 
 
 app = web.Application()
@@ -53,6 +61,7 @@ for route in list(app.router.routes()):
 
 async def pre_init():
     log('Creating aiohttp app')
+    app['request_count'] = 0
 
 
 async def app_factory():
@@ -61,7 +70,7 @@ async def app_factory():
 
 
 def run_it():
-    web.run_app(app_factory(), port=2233)
+    web.run_app(app_factory(), port=2234)
 
 
 run_it()
