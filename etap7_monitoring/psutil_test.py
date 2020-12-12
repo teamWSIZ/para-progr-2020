@@ -2,6 +2,9 @@ from time import sleep
 import psutil
 
 # info: https://psutil.readthedocs.io/en/latest/
+"""
+Zczytywanie różnych parametrów hosta...
+"""
 
 for i in range(30):
     # print(psutil.getloadavg())

@@ -1,33 +1,23 @@
 import asyncio
+import json
 from asyncio import sleep
-from dataclasses import asdict, dataclass
 from datetime import datetime
+from http.client import BAD_REQUEST
 
-import aiohttp_cors
 import psutil
 from aiohttp import web
-from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST, Histogram
 
 from simplelogger import log
 
 """
-For middleware see: https://rollout.io/blog/monitoring-your-asynchronous-python-web-applications-using-prometheus/
+For my_middleware see: https://rollout.io/blog/monitoring-your-asynchronous-python-web-applications-using-prometheus/
 
 """
 
 
-def answer(comment: str, status=200):
-    return web.json_response(simple_response(comment), status=status)
-
-
-@dataclass
-class RestResult(object):
-    comment: str
-    data: str = ''
-
-
-def simple_response(comment: str):
-    return asdict(RestResult(comment))
+def answer(msg: str):
+    return web.json_response({'comment': msg})
 
 
 routes = web.RouteTableDef()
@@ -39,48 +29,73 @@ routes = web.RouteTableDef()
 
 @routes.get('/')
 async def hello(req):
-    req.app['RR'].labels('call_count', 'hello').inc()  # access fields, rr{field1="val1",field2="hello"} 1.0
+    raise RuntimeError('ha!')
+    return web.json_response({'comment': 'some error'}, status=BAD_REQUEST)
+
+
+@routes.get('/long_requests')
+async def hello(req):
+    long_metric().inc()
+    print('long')
+    await sleep(1.5)
     return answer(f'app works OK')
 
 
 ### prometheus integration
 @routes.get('/metrics')
 async def metrics(req):
-    resp = web.Response(body=generate_latest())
+    resp = web.Response(body=generate_latest())  # generate_latest --> prometheus client
     resp.content_type = CONTENT_TYPE_LATEST
     return resp
 
 
-app = web.Application()
+@web.middleware
+async def my_middleware(request, handler):
+    print(f'enter: {request.rel_url}')
+    h = app['h']
+    st = datetime.now().timestamp()
+    calls_metric().inc()
+    try:
+        response = await handler(request)
+        en = datetime.now().timestamp()
+        delta = en - st
+        h.observe(delta)
+        print(f'finish in {delta:.3f}')
+        return response
+    except:
+        message = 'internal exception'
+        error_metric().inc()
+    return web.json_response({'error': message})
+
+
+app = web.Application(middlewares=[my_middleware])
 app.router.add_routes(routes)
-
-#  setup generous CORS:
-cors = aiohttp_cors.setup(app, defaults={
-    "*": aiohttp_cors.ResourceOptions(
-        allow_credentials=True,
-        expose_headers="*",
-        allow_headers="*",
-    )
-})
-
-for route in list(app.router.routes()):
-    cors.add(route)
-
 
 ##############
 # Periodic monitoring
+HOST = 'my_pc'
 
-def network_io():
-    gg = psutil.net_io_counters(pernic=True)['wlp59s0']
-    return gg.bytes_sent / 1000, gg.bytes_recv / 1000
+
+def calls_metric():
+    return gauge().labels(HOST, 'calls')
+
+
+def long_metric():
+    return gauge().labels(HOST, 'long')
+
+
+def error_metric():
+    return gauge().labels(HOST, 'error')
+
+
+def cpu_metric():
+    return gauge().labels(HOST, 'cpu')
 
 
 async def update_gauges():
+    """Periodycznie zbierane informacje"""
     while True:
-        app['RR'].labels('cpu', 'hello').set(psutil.cpu_percent())
-        net = network_io()
-        app['RR'].labels('net_sent', 'hello').set(net[0])
-        app['RR'].labels('net_recv', 'hello').set(net[1])
+        cpu_metric().set(psutil.cpu_percent())
         print('updated gauges', datetime.now())
         await sleep(5)
 
@@ -88,9 +103,23 @@ async def update_gauges():
 ##############
 # App creation
 
+def gauge() -> Gauge:
+    return app['RR']
+
+
 async def pre_init():
     log('Creating aiohttp app')
-    app['RR'] = Gauge('rr', 'test gauge', ['field1', 'field2'])  #
+    app['RR'] = Gauge('rr', 'test gauge', ['host', 'metric'])  # rr = nazwa metryki, host/metric -- nazwy pól
+    buckets = []
+    for i in range(1,21):
+        buckets.append(0.0001*i)
+    buckets.append(0.1)
+    buckets.append(0.5)
+    buckets.append(1)
+    buckets.append(2)
+    buckets.append(4)
+    app['h'] = Histogram('rx', 'Call execution times', buckets=buckets)
+
     asyncio.create_task(update_gauges())
 
 
@@ -100,7 +129,7 @@ async def app_factory():
 
 
 def run_it():
-    web.run_app(app_factory(), port=2233, host='localhost')
+    web.run_app(app_factory(), port=3333, host='localhost')
 
 
 run_it()
