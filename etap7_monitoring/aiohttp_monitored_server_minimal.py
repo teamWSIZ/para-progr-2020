@@ -32,7 +32,17 @@ async def metrics(req):
     return resp
 
 
-app = web.Application()
+@web.middleware
+async def my_middleware(request, handler):
+    print(f'enter: {request.rel_url}')
+    start = datetime.now().timestamp()
+    response = await handler(request)
+    end = datetime.now().timestamp()
+    delta = end - start
+    print(f'finish in {delta:.3f}')
+    return response
+
+app = web.Application(middlewares=[my_middleware])
 app.router.add_routes(routes)
 
 ##############
@@ -74,7 +84,7 @@ async def app_factory():
 
 
 def run_it():
-    web.run_app(app_factory(), port=3334, host='localhost')
+    web.run_app(app_factory(), port=3333, host='localhost')
 
 
 run_it()
