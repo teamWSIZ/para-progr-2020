@@ -2,6 +2,11 @@ import unittest
 from asyncio import sleep
 from random import randint
 
+"""
+Przykład testów jednostkowych kodu asynchronicznego: 
+W przykładzie pokazujemy jak utworzyć obiekt współdzielony między wieloma testami.
+"""
+
 
 class Engine:
     async def wait_a_second(self):
@@ -18,7 +23,7 @@ class FakeDbConnection:
 
 
 state = dict()
-state['connection']: FakeDbConnection = None
+state['connection'] = None
 
 
 def c() -> FakeDbConnection:

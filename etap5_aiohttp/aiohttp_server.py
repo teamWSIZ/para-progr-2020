@@ -1,3 +1,4 @@
+from asyncio import sleep
 from dataclasses import asdict, dataclass
 
 import aiohttp_cors
@@ -29,14 +30,15 @@ routes = web.RouteTableDef()
 
 @routes.get('/')
 async def hello(req):
-    app['request_count'] += 1
+    counter().cnt += 1
+    await sleep(0.2)
     return answer(f'app works OK')
 
 
 @routes.get('/test')
 async def hello(req):
-    app['request_count'] += 1
-    print(f'current counter: {app["request_count"]}')
+    counter().cnt += 1
+    print(f'current counter: {counter().cnt}')
     return web.json_response({"result": 15, "comment": 'OK'})
 
 
@@ -56,16 +58,21 @@ for route in list(app.router.routes()):
     cors.add(route)
 
 
+@dataclass
+class Counter:
+    cnt = 0
+
+
+def counter() -> Counter:
+    return app['state']  # zapinanie obiektów globalnych; app['state'] nie będzie się zmieniać (ale wnętrze Counter tak)
+
+
 ##############
 # App creation
 
-async def pre_init():
-    log('Creating aiohttp app')
-    app['request_count'] = 0
-
-
 async def app_factory():
-    await pre_init()
+    log('Creating aiohttp app')
+    app['state'] = Counter()
     return app
 
 
