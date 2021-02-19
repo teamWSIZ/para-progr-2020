@@ -3,8 +3,8 @@ import concurrent.futures
 import threading
 from datetime import datetime
 from math import sin
-
 from PIL import Image
+from PIL import Image, ImageEnhance
 from resizeimage import resizeimage
 
 
@@ -50,6 +50,11 @@ async def tick():
     return 1
 
 
+async def small_update():
+    await asyncio.sleep(0.1)
+    log(f'. {t()}')
+
+
 async def main():
     loop = asyncio.get_running_loop()
     tasks = []
@@ -68,7 +73,7 @@ async def main():
     w = await asyncio.wait(tasks)  # czeka na wszystkie, zbiera wyniki
     # print(w)
     pool.shutdown()
-    log(f'after main.await: {ts() - st:.6f}s')
+    log(f'after main.await: {ts()-st:.6f}s')
 
 
 asyncio.run(main())
