@@ -39,7 +39,7 @@ class DB:
             person_id = await c.fetchval('''
                     INSERT INTO PERSONS(name, address) VALUES ($1,$2) RETURNING id''',
                                     name, address)
-            # print(f'inserted person with id={person_id}')
+            print(f'inserted person with id={person_id}')
 
 
 async def main_task():

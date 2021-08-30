@@ -37,9 +37,6 @@ class Test(unittest.IsolatedAsyncioTestCase):
             state['connection'] = FakeDbConnection()
             await c().connect()
 
-    async def asyncTearDown(self):
-        pass
-
     async def test_waiting(self):
         print(f'zaczynamy czekanie; btw -- connection: {c().id}')
         await Engine().wait_a_second()
@@ -49,6 +46,11 @@ class Test(unittest.IsolatedAsyncioTestCase):
         print(f'zaczynamy czekanie; btw -- connection: {c().id}')
         await Engine().wait_a_second()
         print('koniec czekania')
+
+
+    async def asyncTearDown(self):
+        pass
+
 
 
 if __name__ == "__main__":

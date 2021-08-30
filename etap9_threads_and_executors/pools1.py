@@ -24,12 +24,12 @@ def zadanie(arg):
     return arg * arg
 
 
-executor = ThreadPoolExecutor(4)  # single physical thread; async
+executor = ThreadPoolExecutor(4)        # single physical thread; async
 
 futures: List[Future] = []
 
 for i in range(12):
-    f = executor.submit(zadanie, i)  # wrzuca zadanie do wykonania; nie czeka na wynik
+    f = executor.submit(zadanie, i)     # wrzuca zadanie do wykonania; nie czeka na wynik
     futures.append(f)
     log(f'submitted {i}')
 log('wszystkie zadania zasubmitowane')

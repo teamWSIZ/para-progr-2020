@@ -31,15 +31,22 @@ routes = web.RouteTableDef()
 @routes.get('/')
 async def hello(req):
     counter().cnt += 1
-    await sleep(0.2)
+    await sleep(1)
     return answer(f'app works OK')
 
+@dataclass
+class Counter:
+    cnt = 0
+
+
+def counter() -> Counter:
+    return app['state']                                                     # zapinanie obiektów globalnych; app['state'] nie będzie się zmieniać (ale wnętrze Counter tak)
 
 @routes.get('/test')
-async def hello(req):
+async def get_counters(req):
     counter().cnt += 1
     print(f'current counter: {counter().cnt}')
-    return web.json_response({"result": 15, "comment": 'OK'})
+    return web.json_response({"result": counter().cnt, "comment": 'OK'})
 
 
 app = web.Application()
@@ -58,13 +65,6 @@ for route in list(app.router.routes()):
     cors.add(route)
 
 
-@dataclass
-class Counter:
-    cnt = 0
-
-
-def counter() -> Counter:
-    return app['state']  # zapinanie obiektów globalnych; app['state'] nie będzie się zmieniać (ale wnętrze Counter tak)
 
 
 ##############
